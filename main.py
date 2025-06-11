@@ -14,11 +14,15 @@ oa_t_c = 0
 offset = 0  # left motor offset
 SPD = 40
 T_LOW, T_HIGH = 0, 30
-T_S_TIME = 380
+T_S_TIME = 390
+
+ct.set_underglow_lights(50, 0, 0, 0, 50, 0)
 
 def set_state(s):
-    global state, prev_state, t_in_state
+    global state, prev_state, t_in_state, sub_state
     prev_state, state, t_in_state = state, s, 0
+    if s == OBSTACLE_AVOIDANCE:
+        sub_state = OA_FIRST_TURN
 
 def set_motor(l, r):
     ct.set_motors_speed(round(l * (1 - offset)), round(r * (1 + offset)))
@@ -47,13 +51,13 @@ while state != E_STOP:
             set_state(DRIVE_RIGHT)
 
     elif state == OBSTACLE_AVOIDANCE:
-        if t_in_state == 1:
-            sub_state = OA_FIRST_TURN
-        elif sub_state in (0, DRIVE_LEFT, DRIVE_RIGHT):
+        if sub_state in (0, DRIVE_LEFT, DRIVE_RIGHT):
             sub_state = 0
 
-        if track == 11:
+        if track == 11 or track == 10:
             set_state(DRIVE_LEFT)
+        elif track == 1:
+            set_state(DRIVE_RIGHT)
 
     # Execute state
     if state == DRIVE_FORWARD:
@@ -62,7 +66,7 @@ while state != E_STOP:
         set_motor(SPD, SPD)
     elif state == DRIVE_LEFT:
         ct.set_car_light(LEFT_LIGHT_ADDR, 0, 255, 0)
-        ct.set_car_light(RIGHT_LIGHT_ADDR, 255, 0 , 0)
+        ct.set_car_light(RIGHT_LIGHT_ADDR, 0, 0 , 0)
         set_motor(T_LOW, T_HIGH)
     elif state == DRIVE_RIGHT:
         ct.set_car_light(LEFT_LIGHT_ADDR, 0, 255, 0)
@@ -122,6 +126,8 @@ while state != E_STOP:
     t += 1
     t_in_state += 1
     t_in_sub_state += 1
+    ct.set_car_light(LEFT_LIGHT_ADDR, 0, 0, 0)
+    ct.set_car_light(RIGHT_LIGHT_ADDR, 0, 0 , 0)
     sleep(50)
 
 # E_stop
