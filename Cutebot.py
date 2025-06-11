@@ -1,10 +1,13 @@
-from microbit import i2c, pin12, pin8, pin13, pin14
+from microbit import i2c, pin12, pin8, pin13, pin14, pin15
 from time import sleep_us
 from machine import time_pulse_us
+from neopixel import NeoPixel
 
 CUTEBOT_ADDR = 0x10
 LEFT_LIGHT_ADDR = 0x04
 RIGHT_LIGHT_ADDR = 0x08
+
+leds = NeoPixel(pin15, 2)
 
 class Cutebot:
     def __init__(self):
@@ -23,6 +26,11 @@ class Cutebot:
         if R > 255 or G > 255 or B > 255:
             return
         i2c.write(CUTEBOT_ADDR, bytearray([light, R, G, B]))
+
+    def set_underglow_lights(self, r_l: int, g_l: int, b_l: int, r_r: int, g_r: int, b_r: int):
+        leds[0] = (r_l, g_l, b_l)
+        leds[1] = (r_r, g_r, b_r)
+        leds.show()
 
     def get_distance(self) -> float:
         self._e.read_digital()
